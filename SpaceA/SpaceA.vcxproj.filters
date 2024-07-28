@@ -13,13 +13,33 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{8ae9ca2b-de9f-4d80-a4bd-702b8f9e41e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\model">
+      <UniqueIdentifier>{f183829d-049f-4db9-9e04-b230dd8a3995}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\model\asteroide">
+      <UniqueIdentifier>{c48e90cb-c48f-47ae-8172-09f1bbc7f03a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\model\nave">
+      <UniqueIdentifier>{0f7562bd-0190-4f0d-b686-7408b765d4d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\OpenGL_Stuff\Library\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Prueba.cpp">
+    <ClCompile Include="SpaceA_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\shader_sa.fs">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="shaders\shader_sa.vs">
+      <Filter>Source Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
