@@ -22,10 +22,11 @@ void processInput(GLFWwindow* window);
 
 // settings
 const unsigned int SCR_WIDTH = 1200;
-const unsigned int SCR_HEIGHT = 1000;
+const unsigned int SCR_HEIGHT = 1200;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
+
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -84,19 +85,13 @@ int main()
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
 
     // load models
-    // -----------
-    //Model ourModel(FileSystem::getPath("resources/objects/backpack/backpack.obj"));
-    //Model ourModel("model/backpack/backpack.obj");
-    // 
-    //para poner una ubicacion solo esta funcionando el path completo.
-    Model asteroides("C:/Users/Michael/Documents/Visual Studio 2022/SpaceA/SpaceA/model/asteroide/asteroide.obj");
-    Model nave("C:/Users/Michael/Documents/Visual Studio 2022/SpaceA/SpaceA/model/nave/nave.obj");
-    Model sistemaSolar("C:/Users/Michael/Documents/Visual Studio 2022/SpaceA/SpaceA/model/sistema solar/sistema.obj");
-    Model balckHole("C:/Users/Michael/Documents/Visual Studio 2022/SpaceA/SpaceA/model/black hole/blackhole.obj");
-    //este tiene un error unu 
-    //Model planetas("C:/Users/Michael/Documents/Visual Studio 2022/SpaceA/SpaceA/model/planetas/planetas.obj");
+    //para poner una ubicacion solo esta funcionando el path completo (K: A mi me funcionó desde model)
     
-
+    //Model asteroide("model/asteroide/asteroide.obj");
+    //Model balckHole("model/black hole/blackhole.obj");
+    Model nave("model/nave/nave.obj");
+    //Model planetas("model/planetas/planetas.obj");
+    Model sistemaSolar ("model/sistema solar/sistema.obj");
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -117,26 +112,32 @@ int main()
 
         // render
         // ------
-        glClearColor(0.5f, 1.0f, 0.5f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
 
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // En tu bucle de renderizado, asegúrate de que el valor de Zoom es el que deseas
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); 
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
-        // render asteroides
+        // Render nave
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // Ajusta la posición de la nave
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));      // Ajusta la escala de la nave
+        ourShader.setMat4("model", model);
+        nave.Draw(ourShader);
+
+        // Render sistema solar
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0f, 0.0f, -20.0f)); // Ajusta la posición del sistema solar
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));         // Ajusta la escala del sistema solar
         ourShader.setMat4("model", model);
         sistemaSolar.Draw(ourShader);
-
-        //render nave
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -159,13 +160,13 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.ProcessKeyboard(FORWARD, deltaTime * 5.0);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.ProcessKeyboard(BACKWARD, deltaTime * 5.0);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.ProcessKeyboard(LEFT, deltaTime * 5.0);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.ProcessKeyboard(RIGHT, deltaTime * 5.0);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
