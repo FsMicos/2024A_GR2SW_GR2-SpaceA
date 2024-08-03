@@ -10,7 +10,7 @@ Ni 1.500000
 d 1.000000
 illum 2
 map_Kd C:/Planet_barren_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_barren_normal.png
+map_Bump -bm 1.000000 Planet_barren_normal.png
 
 newmtl Planet_continental.001
 Ns 250.000000
@@ -21,7 +21,7 @@ Ni 1.500000
 d 1.000000
 illum 2
 map_Kd C:/Planet_continental_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_continental_normal.png
+map_Bump -bm 1.000000 Planet_continental_normal.png
 
 newmtl Planet_frozen.001
 Ns 250.000000
@@ -32,7 +32,7 @@ Ni 1.500000
 d 1.000000
 illum 2
 map_Kd C:/Planet_frozen_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_frozen_normal.png
+map_Bump -bm 1.000000 Planet_frozen_normal.png
 
 newmtl Planet_gas.001
 Ns 250.000000
@@ -43,7 +43,7 @@ Ni 1.500000
 d 1.000000
 illum 2
 map_Kd C:/Planet_gas_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_gas_normal.png
+map_Bump -bm 1.000000 Planet_gas_normal.png
 
 newmtl Planet_lava.001
 Ns 250.000000
@@ -54,7 +54,7 @@ d 1.000000
 illum 2
 map_Kd C:/Planet_lava_baseColor.jpeg
 map_Ke C:/Planet_lava_emissive.png
-map_Bump -bm 1.000000 C:/Planet_lava_normal.png
+map_Bump -bm 1.000000 Planet_lava_normal.png
 
 newmtl Planet_smac.001
 Ns 250.000000
@@ -65,7 +65,7 @@ Ni 1.500000
 d 1.000000
 illum 2
 map_Kd C:/Planet_smac_baseColor.png
-map_Bump -bm 1.000000 C:/Planet_smac_normal.png
+map_Bump -bm 1.000000 Planet_smac_normal.png
 
 newmtl planet_continental_cloud.001
 Ns 340.696167
@@ -74,9 +74,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 illum 2
-map_Kd C:/planet_continental_cloud_baseColor.png
-map_d C:/planet_continental_cloud_baseColor.png
-map_Bump -bm 1.000000 C:/planet_continental_cloud_normal.png
+map_Kd planet_continental_cloud_baseColor.png
+map_d planet_continental_cloud_baseColor.png
+map_Bump -bm 1.000000 planet_continental_cloud_normal.png
 
 newmtl planet_gas_cloud_01.001
 Ns 250.000000
@@ -85,9 +85,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 illum 2
-map_Kd C:/planet_gas_cloud_01_baseColor.png
-map_d C:/planet_gas_cloud_01_baseColor.png
-map_Bump -bm 1.000000 C:/planet_gas_cloud_01_normal.png
+map_Kd planet_gas_cloud_01_baseColor.png
+map_d planet_gas_cloud_01_baseColor.png
+map_Bump -bm 1.000000 planet_gas_cloud_01_normal.png
 
 newmtl planet_gas_cloud_02.001
 Ns 250.000000
@@ -96,9 +96,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 illum 2
-map_Kd C:/planet_gas_cloud_02_baseColor.png
-map_d C:/planet_gas_cloud_02_baseColor.png
-map_Bump -bm 1.000000 C:/planet_gas_cloud_02_normal.png
+map_Kd planet_gas_cloud_02_baseColor.png
+map_d planet_gas_cloud_02_baseColor.png
+map_Bump -bm 1.000000 planet_gas_cloud_02_normal.png
 
 newmtl planet_smac_cloud.001
 Ns 250.000000
@@ -107,6 +107,6 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 illum 2
-map_Kd C:/planet_smac_cloud_baseColor.png
-map_d C:/planet_smac_cloud_baseColor.png
-map_Bump -bm 1.000000 C:/planet_smac_cloud_normal.png
+map_Kd planet_smac_cloud_baseColor.png
+map_d planet_smac_cloud_baseColor.png
+map_Bump -bm 1.000000 planet_smac_cloud_normal.png

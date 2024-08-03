@@ -91,7 +91,7 @@ int main()
     //Model balckHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
     //Model planetas("model/planetas/planetas.obj");
-    Model sistemaSolar ("model/sistema solar/sistema.obj");
+    Model tierra ("model/sistema solar/tierra.obj");
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -137,7 +137,7 @@ int main()
         model = glm::translate(model, glm::vec3(10.0f, 0.0f, -20.0f)); // Ajusta la posición del sistema solar
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));         // Ajusta la escala del sistema solar
         ourShader.setMat4("model", model);
-        sistemaSolar.Draw(ourShader);
+        tierra.Draw(ourShader);
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

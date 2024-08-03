@@ -9,8 +9,8 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd C:/Planet_barren_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_barren_normal.png
+map_Kd Planet_barren_baseColor.jpeg
+map_Bump -bm 1.000000 Planet_barren_normal.png
 
 newmtl Planet_continental.001
 Ns 250.000000
@@ -20,8 +20,8 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd C:/Planet_continental_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_continental_normal.png
+map_Kd Planet_continental_baseColor.jpeg
+map_Bump -bm 1.000000 Planet_continental_normal.png
 
 newmtl Planet_frozen.001
 Ns 250.000000
@@ -31,8 +31,8 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd C:/Planet_frozen_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_frozen_normal.png
+map_Kd Planet_frozen_baseColor.jpeg
+map_Bump -bm 1.000000 Planet_frozen_normal.png
 
 newmtl Planet_gas.001
 Ns 250.000000
@@ -42,8 +42,8 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd C:/Planet_gas_baseColor.jpeg
-map_Bump -bm 1.000000 C:/Planet_gas_normal.png
+map_Kd Planet_gas_baseColor.jpeg
+map_Bump -bm 1.000000 Planet_gas_normal.png
 
 newmtl Planet_lava.001
 Ns 250.000000
