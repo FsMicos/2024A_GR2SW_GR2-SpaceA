@@ -160,15 +160,16 @@ int main()
         glm::vec3 cameraPosition = camera.GetPosition();
         glm::vec3 Diferencia = cameraPosition - inicialCamera;
        
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, Diferencia); // Ajusta la posici�n de la nave
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));// Ajusta la escala de la nave
+        glm::mat4 modelNave = glm::mat4(1.0f);
+        modelNave = glm::translate(modelNave, Diferencia); // Ajusta la posici�n de la nave
+        modelNave = glm::scale(modelNave, glm::vec3(1.0f, 1.0f, 1.0f));// Ajusta la escala de la nave
         float angle = glm::radians(270.0f); // Convertir 90 grados a radianes
-        model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        modelNave = glm::rotate(modelNave, angle, glm::vec3(0.0f, 1.0f, 0.0f));
         angle = glm::radians(180.0f);
-        model = glm::rotate(model, angle, glm::vec3(1.0f, 0.0f, 0.0f));
+        modelNave = glm::rotate(modelNave, angle, glm::vec3(1.0f, 0.0f, 0.0f));
         // Aplica la rotaci�n de animaci�n
-        model = glm::rotate(model, glm::radians(rotationAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+        modelNave = glm::rotate(modelNave, glm::radians(rotationAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+        ourShader.setMat4("model", modelNave);
         nave.Draw(ourShader);
         // Render sol (en el origen del sistema de coordenadas)
         glm::mat4 model = glm::mat4(1.0f);
@@ -303,7 +304,7 @@ float processInput(GLFWwindow* window)
             elapsedTime += deltaTime;
             float progress = elapsedTime / animationDuration;
             if (progress < 1.0f) {
-                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotaci�n hacia el m�ximo
+                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotación hacia el máximo
             }
             else {
                 rotationAngle = maxAngle * rotationDirection;
@@ -315,11 +316,11 @@ float processInput(GLFWwindow* window)
             returnElapsedTime += deltaTime;
             float returnProgress = returnElapsedTime / returnDuration;
             if (returnProgress < 1.0f) {
-                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleraci�n hacia 0
+                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleración hacia 0
             }
             else {
                 rotationAngle = 0.0f;
-                isAnimating = false; // Finaliza la animaci�n
+                isAnimating = false; // Finaliza la animación
             }
         }
     }
