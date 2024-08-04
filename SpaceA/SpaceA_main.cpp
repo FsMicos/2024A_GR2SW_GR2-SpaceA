@@ -43,9 +43,9 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
 // timing
+float aceleracion = 30.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-
 
 
 int main()
@@ -172,7 +172,7 @@ int main()
         // Render sol (en el origen del sistema de coordenadas)
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-75.0f, 0.0f, -280.0f)); // Posición fija del sol
-        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+        model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
         ourShader.setMat4("model", model);
         sol.Draw(ourShader);
 		anglePlaneta += glm::radians(deltaTime * 15);
@@ -197,6 +197,7 @@ int main()
         glm::mat4 tierraModel = glm::mat4(1.0f);
         tierraModel = glm::translate(tierraModel, glm::vec3(tierraDistance * glm::cos(anglePlaneta + glm::radians(90.0f)), 0.0f, tierraDistance * glm::sin(anglePlaneta + glm::radians(90.0f))));
         tierraModel = glm::scale(tierraModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        tierraModel = glm::rotate(tierraModel, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ourShader.setMat4("model", tierraModel);
         tierra.Draw(ourShader);
 
@@ -258,7 +259,7 @@ int main()
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1200.0f));
-		model = glm::scale(model, glm::vec3(4.0f, 4.0f,4.0f));
+		model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
 		ourShader.setMat4("model", model);
 		balckHole.Draw(ourShader);
 
@@ -281,15 +282,16 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 float processInput(GLFWwindow* window)
 {
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime * 3.0);
+        camera.ProcessKeyboard(FORWARD, deltaTime * aceleracion);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime * 3.0);
+        camera.ProcessKeyboard(BACKWARD, deltaTime * aceleracion);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.ProcessKeyboard(LEFT, deltaTime * 3.0);
+        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);
         if (!isAnimating) {
             isAnimating = true;
             isReturning = false;
@@ -299,7 +301,7 @@ float processInput(GLFWwindow* window)
         }
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.ProcessKeyboard(RIGHT, deltaTime * 3.0);
+        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);
         if (!isAnimating) {
             isAnimating = true;
             isReturning = false;
