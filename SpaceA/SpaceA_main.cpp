@@ -24,14 +24,15 @@ glm::vec3 inicialCamera(0.0f, 0.4f, 2.0f);
 Camera camera(inicialCamera);
 //nave
 bool isAnimating = false;
-bool isReturning = false; // Nuevo estado para controlar la fase de retorno
+bool isReturning = false; // Estado de retorno
+bool isKeyPressed = false; // Estado de la tecla
 float rotationAngle = 0.0f;
-float maxAngle = 20.0f; // M?ximo ?ngulo de rotaci?n
-float animationDuration = 0.5f; // Duraci?n de la animaci?n en segundos
-float returnDuration = 0.5f; // Duraci?n para regresar a 0 grados
-float elapsedTime = 0.0f; // Tiempo transcurrido en la animaci?n
+float maxAngle = 10.0f; // Máximo ángulo de rotación
+float animationDuration = 1.0f; // Duración para alcanzar el ángulo máximo
+float returnDuration = 1.0f; // Duración para regresar a 0 grados
+float elapsedTime = 0.0f; // Tiempo transcurrido en la animación
 float returnElapsedTime = 0.0f; // Tiempo transcurrido en la fase de retorno
-int rotationDirection = 1;
+int rotationDirection = 1; //
 
 bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
@@ -349,7 +350,9 @@ int main()
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 float processInput(GLFWwindow* window)
-{
+{   
+    bool keyA = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+    bool keyD = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -358,48 +361,54 @@ float processInput(GLFWwindow* window)
         camera.ProcessKeyboard(FORWARD, deltaTime * aceleracion);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime * aceleracion);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);
-        if (!isAnimating) {
-            isAnimating = true;
-            isReturning = false;
-            elapsedTime = 0.0f; // Reinicia el tiempo de animaci?n
-            returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            rotationDirection = 1; // Direcci?n de rotaci?n hacia adelante
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) 
+        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);  
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) 
+        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);       
+    // Detectar si se ha presionado A o D
+    bool anyKeyPressed = keyA || keyD;
+    if (anyKeyPressed) {
+        if (!isKeyPressed) {
+            isKeyPressed = true;
+            if (!isAnimating) {
+                isAnimating = true;
+                isReturning = false;
+                elapsedTime = 0.0f; // Reinicia el tiempo de animación
+                returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
+                rotationDirection = keyA ? 1 : -1; // Dirección de rotación basada en la tecla
+            }
         }
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);
-        if (!isAnimating) {
-            isAnimating = true;
-            isReturning = false;
-            elapsedTime = 0.0f; // Reinicia el tiempo de animaci?n
-            returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            rotationDirection = -1; // Direcci?n de rotaci?n hacia atr?s
+    else {
+        if (isKeyPressed) {
+            isKeyPressed = false;
+            if (isAnimating && !isReturning) {
+                isReturning = true; // Comienza la fase de retorno si la tecla se suelta
+                returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
+            }
         }
     }
+
     if (isAnimating) {
         if (!isReturning) {
             elapsedTime += deltaTime;
             float progress = elapsedTime / animationDuration;
             if (progress < 1.0f) {
-                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotaci�n hacia el m�ximo
+                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotación hacia el máximo
             }
             else {
-                rotationAngle = maxAngle * rotationDirection;
-                isReturning = true; // Comienza la fase de retorno
-                returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
+                rotationAngle = maxAngle * rotationDirection; // Mantiene el ángulo máximo
             }
         }
         else {
             returnElapsedTime += deltaTime;
             float returnProgress = returnElapsedTime / returnDuration;
             if (returnProgress < 1.0f) {
-                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleraci�n hacia 0
+                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleración hacia 0
             }
             else {
                 rotationAngle = 0.0f;
-                isAnimating = false; // Finaliza la animaci�n
+                isAnimating = false; // Finaliza la animación
             }
         }
     }
