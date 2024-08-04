@@ -48,7 +48,6 @@ float aceleracion = 30.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-
 int main()
 {
     // glfw: initialize and configure
@@ -127,8 +126,10 @@ int main()
     float anglePlaneta = 0.0f;
     // render loop
     // -----------
-   
-
+    
+    //Pos y color del sol
+    glm::vec3 sunPos = glm::vec3(-75.0f, 0.0f, -200.0f);
+    glm::vec3 sunColor = glm::vec3(1.0f, 1.0f, 0.0f);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -154,6 +155,10 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
+        // Config de la luz del sol
+        ourShader.setVec3("sunPos", sunPos);
+        ourShader.setVec3("sunColor", sunColor);
+        ourShader.setVec3("viewPos", camera.GetPosition());
 
         // Render nave
         glm::vec3 cameraPosition = camera.GetPosition();
@@ -264,7 +269,12 @@ int main()
 		ourShader.setMat4("model", model);
 		balckHole.Draw(ourShader);
 
-        
+        // Render del sol
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, sunPos);
+        model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+        ourShader.setMat4("model", model);
+        sol.Draw(ourShader);
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
