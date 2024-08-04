@@ -283,49 +283,18 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 float processInput(GLFWwindow* window)
 {
-<<<<<<< HEAD
-=======
     bool keyA = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
     bool keyD = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
->>>>>>> a938fc62121db972d031511b1505f5c821869ea0
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-<<<<<<< HEAD
-        camera.ProcessKeyboard(FORWARD, deltaTime * aceleracion);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime * aceleracion);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);
-        if (!isAnimating) {
-            isAnimating = true;
-            isReturning = false;
-            elapsedTime = 0.0f; // Reinicia el tiempo de animaci�n
-            returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            rotationDirection = 1; // Direcci�n de rotaci�n hacia adelante
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);
-        if (!isAnimating) {
-            isAnimating = true;
-            isReturning = false;
-            elapsedTime = 0.0f; // Reinicia el tiempo de animaci�n
-            returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            rotationDirection = -1; // Direcci�n de rotaci�n hacia atr�s
-=======
         camera.ProcessKeyboard(FORWARD, deltaTime * 5.0);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime * 5.0);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) 
-        camera.ProcessKeyboard(LEFT, deltaTime * 5.0);
-        
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) 
-        camera.ProcessKeyboard(RIGHT, deltaTime * 3.0);
-        
-    
+
+    // Detectar si se ha presionado A o D
     bool anyKeyPressed = keyA || keyD;
     if (anyKeyPressed) {
         if (!isKeyPressed) {
@@ -337,7 +306,6 @@ float processInput(GLFWwindow* window)
                 returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
                 rotationDirection = keyA ? 1 : -1; // Dirección de rotación basada en la tecla
             }
->>>>>>> a938fc62121db972d031511b1505f5c821869ea0
         }
     }
     else {
