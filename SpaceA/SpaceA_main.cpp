@@ -13,26 +13,32 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-float processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 1200;
-const unsigned int SCR_HEIGHT = 1200;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 // camera
 glm::vec3 inicialCamera(0.0f, 0.4f, 2.0f);
 Camera camera(inicialCamera);
-//nave
+
+// nave
+
+
 bool isAnimating = false;
-bool isReturning = false; // Estado de retorno
-bool isKeyPressed = false; // Estado de la tecla
+bool isReturning = false;
+bool isKeyPressed = false;
+float maxAngle = 10.0f;
+float animationDuration = 1.0f;
+float returnDuration = 1.0f;
+float elapsedTime = 0.0f;
+float returnElapsedTime = 0.0f;
+int rotationDirection = 1;
 float rotationAngle = 0.0f;
-float maxAngle = 10.0f; // Máximo ángulo de rotación
-float animationDuration = 1.0f; // Duración para alcanzar el ángulo máximo
-float returnDuration = 1.0f; // Duración para regresar a 0 grados
-float elapsedTime = 0.0f; // Tiempo transcurrido en la animación
-float returnElapsedTime = 0.0f; // Tiempo transcurrido en la fase de retorno
-int rotationDirection = 1; //
+float targetRotationAngle = 0.0f;
+float maxRotationAngle = 20.0f; // Maximum rotation angle
+float rotationSpeed = 5.0f; // Speed of rotation (adjust as needed)
 
 bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
@@ -46,7 +52,6 @@ float lastFrame = 0.0f;
 int main()
 {
     // glfw: initialize and configure
-    // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -57,7 +62,6 @@ int main()
 #endif
 
     // glfw window creation
-    // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "SpaceA", NULL, NULL);
     if (window == NULL)
     {
@@ -74,7 +78,6 @@ int main()
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
-    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -85,16 +88,12 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     // configure global opengl state
-    // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
     // build and compile shaders
-    // -------------------------
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
 
     // load models
-    //para poner una ubicacion solo esta funcionando el path completo (K: A mi me funcion� desde model)
-
     Model blackHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
     Model tierra("model/sistema solar/tierra.obj");
@@ -109,36 +108,28 @@ int main()
     Model jupiter("model/sistema solar/jupiter.obj");
     Model marte("model/sistema solar/marte.obj");
 
-    // Array de modelos de asteroides
-    // Array de modelos de asteroides
+    // Array of asteroid models
     Model asteroides[10] = {
-    Model("model/asteroides/asteroide1.obj"),
-    Model("model/asteroides/asteroide2.obj"),
-    Model("model/asteroides/asteroide3.obj"),
-    Model("model/asteroides/asteroide4.obj"),
-    Model("model/asteroides/asteroide5.obj"),
-    Model("model/asteroides/asteroide6.obj"),
-    Model("model/asteroides/asteroide7.obj"),
-    Model("model/asteroides/asteroide8.obj"),
-    Model("model/asteroides/asteroide9.obj"),
-    Model("model/asteroides/asteroide10.obj")
+        Model("model/asteroides/asteroide1.obj"),
+        Model("model/asteroides/asteroide2.obj"),
+        Model("model/asteroides/asteroide3.obj"),
+        Model("model/asteroides/asteroide4.obj"),
+        Model("model/asteroides/asteroide5.obj"),
+        Model("model/asteroides/asteroide6.obj"),
+        Model("model/asteroides/asteroide7.obj"),
+        Model("model/asteroides/asteroide8.obj"),
+        Model("model/asteroides/asteroide9.obj"),
+        Model("model/asteroides/asteroide10.obj")
     };
 
-
-    // draw in wireframe
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glClearColor(0.02f, 0.02f, 0.1f, 1.0f); // Un azul oscuro que simula el espacio
-    //glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Pruebas porque fallatab la textura
+    glClearColor(0.02f, 0.02f, 0.1f, 1.0f);
     float anglePlaneta = 0.0f;
-    // render loop
-    // -----------
-    
-    //Pos y color del sol
-    glm::vec3 sunPos = glm::vec3(-75.0f, 0.0f, -200.0f);
+
+    // Sun position and color
+    glm::vec3 sunPos = glm::vec3(-75.0f, 0.0f, -280.0f);
     glm::vec3 sunColor = glm::vec3(1.0f, 1.0f, 0.0f);
 
-
-    // Suponiendo que cubePositions es un array que define las posiciones de cada asteroide
+    // Asteroid positions and velocities
     glm::vec3 asteroidePositions[30] = {
         glm::vec3(100.0f, 50.0f, -100.0f),
         glm::vec3(50.0f, 930.0f, -2340.0f),
@@ -171,63 +162,66 @@ int main()
         glm::vec3(5.0f, 5.0f, -1410.0f),
         glm::vec3(-1140.0f, 520.0f, 0.0f)
     };
-    // Inicializa los vectores de velocidad de los asteroides
     glm::vec3 asteroideVelocities[30];
     for (int i = 0; i < 30; i++) {
         asteroideVelocities[i] = glm::vec3(
-            static_cast<float>(rand() % 100 - 50) / 10.0f, // Velocidad en X (-5 a 5)
-            static_cast<float>(rand() % 100 - 50) / 10.0f, // Velocidad en Y (-5 a 5)
-            static_cast<float>(rand() % 100 - 50) / 10.0f  // Velocidad en Z (-5 a 5)
+            static_cast<float>(rand() % 100 - 50) / 10.0f,
+            static_cast<float>(rand() % 100 - 50) / 10.0f,
+            static_cast<float>(rand() % 100 - 50) / 10.0f
         );
     }
+    glm::vec3 naveOffset = glm::vec3(0.0f, -0.1f, 0.5f); 
 
-    // Variables para el c�lculo del tiempo
-    float lastFrameTime = 0.0f;
-
+    // render loop
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
-     // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         // input
-        // -----
-        float rotationAngle = processInput(window);
         processInput(window);
 
         // render
-        // ------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // don't forget to enable shader before setting uniforms
         ourShader.use();
+
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 6000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
-        // Config de la luz del sol
-        sunPos = glm::vec3(-75.0f, 0.0f, -280.0f);
+
+        // Sun light configuration
         ourShader.setVec3("sunPos", sunPos);
-        sunColor = glm::vec3(1.0f, 1.0f, 0.0f);
         ourShader.setVec3("sunColor", sunColor);
 
-        // Render nave
-        glm::vec3 cameraPosition = camera.GetPosition();
-        glm::vec3 Diferencia = cameraPosition - inicialCamera;
+        // Calculate nave position relative to camera
+        glm::vec3 navePosition = camera.Position + camera.Front * naveOffset.z + camera.Up * naveOffset.y + camera.Right * naveOffset.x;
 
+        // Render nave
         glm::mat4 modelNave = glm::mat4(1.0f);
-        modelNave = glm::translate(modelNave, Diferencia); // Ajusta la posici?n de la nave
-        modelNave = glm::scale(modelNave, glm::vec3(1.0f, 1.0f, 1.0f));// Ajusta la escala de la nave
-        float angle = glm::radians(270.0f); // Convertir 90 grados a radianes
-        modelNave = glm::rotate(modelNave, angle, glm::vec3(0.0f, 1.0f, 0.0f));
-        angle = glm::radians(180.0f);
-        modelNave = glm::rotate(modelNave, angle, glm::vec3(1.0f, 0.0f, 0.0f));
-        
-        // Aplica la rotaci?n de animaci?n
+        modelNave = glm::translate(modelNave, navePosition);
+
+        // Calculate rotation based on camera orientation
+        glm::vec3 naveDirection = glm::normalize(glm::vec3(camera.Front.x, 0.0f, camera.Front.z));
+        float yaw = atan2(naveDirection.x, naveDirection.z);
+        float pitch = -asin(camera.Front.y); // Negative because OpenGL uses a right-handed coordinate system
+
+        // Apply rotations
+        modelNave = glm::rotate(modelNave, yaw, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate around Y-axis (yaw)
+        modelNave = glm::rotate(modelNave, pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X-axis (pitch)
+
+        // Apply additional rotations and scaling
+        modelNave = glm::rotate(modelNave, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        modelNave = glm::rotate(modelNave, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        modelNave = glm::scale(modelNave, glm::vec3(0.1f, 0.1f, 0.1f)); // Adjust scale as needed
+
+        // Apply the smooth rotation animation
         modelNave = glm::rotate(modelNave, glm::radians(rotationAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+
         ourShader.setMat4("model", modelNave);
         nave.Draw(ourShader);
 
@@ -347,97 +341,63 @@ int main()
             asteroides[i % 10].Draw(ourShader); // Reutilizar los modelos c�clicamente
         }
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-float processInput(GLFWwindow* window)
-{   
-    bool keyA = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
-    bool keyD = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
-
+void processInput(GLFWwindow* window)
+{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime * aceleracion);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime * aceleracion);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) 
-        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);  
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) 
-        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);       
-    // Detectar si se ha presionado A o D
-    bool anyKeyPressed = keyA || keyD;
-    if (anyKeyPressed) {
-        if (!isKeyPressed) {
-            isKeyPressed = true;
-            if (!isAnimating) {
-                isAnimating = true;
-                isReturning = false;
-                elapsedTime = 0.0f; // Reinicia el tiempo de animación
-                returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-                rotationDirection = keyA ? 1 : -1; // Dirección de rotación basada en la tecla
-            }
-        }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);
+
+    // Handling rotation animation
+    bool keyA = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
+    bool keyD = glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS;
+
+    if (keyA && !keyD)
+    {
+        targetRotationAngle = -maxRotationAngle;
     }
-    else {
-        if (isKeyPressed) {
-            isKeyPressed = false;
-            if (isAnimating && !isReturning) {
-                isReturning = true; // Comienza la fase de retorno si la tecla se suelta
-                returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            }
-        }
+    else if (keyD && !keyA)
+    {
+        targetRotationAngle = maxRotationAngle;
+    }
+    else
+    {
+        targetRotationAngle = 0.0f;
     }
 
-    if (isAnimating) {
-        if (!isReturning) {
-            elapsedTime += deltaTime;
-            float progress = elapsedTime / animationDuration;
-            if (progress < 1.0f) {
-                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotación hacia el máximo
-            }
-            else {
-                rotationAngle = maxAngle * rotationDirection; // Mantiene el ángulo máximo
-            }
-        }
-        else {
-            returnElapsedTime += deltaTime;
-            float returnProgress = returnElapsedTime / returnDuration;
-            if (returnProgress < 1.0f) {
-                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleración hacia 0
-            }
-            else {
-                rotationAngle = 0.0f;
-                isAnimating = false; // Finaliza la animación
-            }
-        }
+    // Smoothly interpolate current rotation angle towards target rotation angle
+    float rotationDifference = targetRotationAngle - rotationAngle;
+    if (std::abs(rotationDifference) > 0.01f)
+    {
+        rotationAngle += rotationDifference * rotationSpeed * deltaTime;
     }
-    return rotationAngle;
+    else
+    {
+        rotationAngle = targetRotationAngle;
+    }
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
 
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
@@ -448,14 +408,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos;
+
     lastX = xpos;
     lastY = ypos;
+
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
