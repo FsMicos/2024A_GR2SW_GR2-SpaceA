@@ -208,9 +208,10 @@ int main()
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
         // Config de la luz del sol
+        sunPos = glm::vec3(-75.0f, 0.0f, -280.0f);
         ourShader.setVec3("sunPos", sunPos);
+        sunColor = glm::vec3(1.0f, 1.0f, 0.0f);
         ourShader.setVec3("sunColor", sunColor);
-        ourShader.setVec3("viewPos", camera.GetPosition());
 
         // Render nave
         glm::vec3 cameraPosition = camera.GetPosition();
@@ -223,17 +224,20 @@ int main()
         modelNave = glm::rotate(modelNave, angle, glm::vec3(0.0f, 1.0f, 0.0f));
         angle = glm::radians(180.0f);
         modelNave = glm::rotate(modelNave, angle, glm::vec3(1.0f, 0.0f, 0.0f));
+        
         // Aplica la rotaci?n de animaci?n
         modelNave = glm::rotate(modelNave, glm::radians(rotationAngle), glm::vec3(1.0f, 0.0f, 0.0f));
         ourShader.setMat4("model", modelNave);
         nave.Draw(ourShader);
+
         // Render sol (en el origen del sistema de coordenadas)
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-75.0f, 0.0f, -280.0f)); // Posici�n fija del sol
+        model = glm::translate(model, sunPos); // Posici�n fija del sol
         model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
         ourShader.setMat4("model", model);
         sol.Draw(ourShader);
         anglePlaneta += glm::radians(deltaTime * 15);
+
         // Render mercurio (�rbita circular alrededor del sol)
         float mercurioDistance = 150.0f; // Distancia del sol
         glm::mat4 mercurioModel = glm::mat4(1.0f);
@@ -314,13 +318,6 @@ int main()
         model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
         ourShader.setMat4("model", model);
         jupiter.Draw(ourShader);
-
-        // Render del sol
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, sunPos);
-        model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
-        ourShader.setMat4("model", model);
-        sol.Draw(ourShader);
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1200.0f));
