@@ -16,16 +16,27 @@
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+//void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
+float processInput(GLFWwindow* window);
 
 // settings
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 1200;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
+glm::vec3 inicialCamera(0.0f, 0.4f, 2.0f);
+Camera camera(inicialCamera);
+//nave
+bool isAnimating = false;
+bool isReturning = false; // Nuevo estado para controlar la fase de retorno
+float rotationAngle = 0.0f;
+float maxAngle = 20.0f; // Máximo ángulo de rotación
+float animationDuration = 0.5f; // Duración de la animación en segundos
+float returnDuration = 0.5f; // Duración para regresar a 0 grados
+float elapsedTime = 0.0f; // Tiempo transcurrido en la animación
+float returnElapsedTime = 0.0f; // Tiempo transcurrido en la fase de retorno
+int rotationDirection = 1;
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -59,7 +70,7 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    //glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
@@ -85,7 +96,7 @@ int main()
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
 
     // load models
-    //para poner una ubicacion solo esta funcionando el path completo (K: A mi me funcionó desde model)
+    //para referencia un omodelo utilice .obj y puedes hacerlo desde model 
     
     //Model asteroide("model/asteroide/asteroide.obj");
     //Model balckHole("model/black hole/blackhole.obj");
@@ -98,6 +109,9 @@ int main()
 
     // render loop
     // -----------
+   
+
+
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
@@ -108,7 +122,7 @@ int main()
 
         // input
         // -----
-        processInput(window);
+        float rotationAngle = processInput(window);
 
         // render
         // ------
@@ -120,15 +134,24 @@ int main()
 
         // view/projection transformations
         // En tu bucle de renderizado, asegúrate de que el valor de Zoom es el que deseas
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); 
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
         // Render nave
+        glm::vec3 cameraPosition = camera.GetPosition();
+        glm::vec3 Diferencia = cameraPosition - inicialCamera;
+       
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // Ajusta la posición de la nave
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));      // Ajusta la escala de la nave
+        model = glm::translate(model, Diferencia); // Ajusta la posición de la nave
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));// Ajusta la escala de la nave
+        float angle = glm::radians(270.0f); // Convertir 90 grados a radianes
+        model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        angle = glm::radians(180.0f);
+        model = glm::rotate(model, angle, glm::vec3(1.0f, 0.0f, 0.0f));
+        // Aplica la rotación de animación
+        model = glm::rotate(model, glm::radians(rotationAngle), glm::vec3(1.0f, 0.0f, 0.0f));
         ourShader.setMat4("model", model);
         nave.Draw(ourShader);
 
@@ -154,19 +177,61 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window)
+float processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
+    
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime * 5.0);
+        camera.ProcessKeyboard(FORWARD, deltaTime * 3.0);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime * 5.0);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime * 5.0);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime * 5.0);
+        camera.ProcessKeyboard(BACKWARD, deltaTime * 3.0);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera.ProcessKeyboard(LEFT, deltaTime * 3.0);
+        if (!isAnimating) {
+            isAnimating = true;
+            isReturning = false;
+            elapsedTime = 0.0f; // Reinicia el tiempo de animación
+            returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
+            rotationDirection = 1; // Dirección de rotación hacia adelante
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera.ProcessKeyboard(RIGHT, deltaTime * 3.0);
+        if (!isAnimating) {
+            isAnimating = true;
+            isReturning = false;
+            elapsedTime = 0.0f; // Reinicia el tiempo de animación
+            returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
+            rotationDirection = -1; // Dirección de rotación hacia atrás
+        }
+    }
+    if (isAnimating) {
+        if (!isReturning) {
+            elapsedTime += deltaTime;
+            float progress = elapsedTime / animationDuration;
+            if (progress < 1.0f) {
+                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotación hacia el máximo
+            }
+            else {
+                rotationAngle = maxAngle * rotationDirection;
+                isReturning = true; // Comienza la fase de retorno
+                returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
+            }
+        }
+        else {
+            returnElapsedTime += deltaTime;
+            float returnProgress = returnElapsedTime / returnDuration;
+            if (returnProgress < 1.0f) {
+                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleración hacia 0
+            }
+            else {
+                rotationAngle = 0.0f;
+                isAnimating = false; // Finaliza la animación
+            }
+        }
+    }
+    return rotationAngle;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
