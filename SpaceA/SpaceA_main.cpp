@@ -48,6 +48,10 @@ float lastY = SCR_HEIGHT / 2.0f;
 float aceleracion = 30.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+float verticalOffset = 0.0f;
+float targetVerticalOffset = 0.0f;
+float maxVerticalOffset = 1.0f; // Maximum vertical offset
+float verticalSpeed = 30.0f; // Speed of vertical movement (adjust as needed)
 
 int main()
 {
@@ -363,6 +367,10 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.ProcessKeyboard(UP, deltaTime * aceleracion);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        camera.ProcessKeyboard(DOWN, deltaTime * aceleracion);
 
     // Handling rotation animation
     bool keyA = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
