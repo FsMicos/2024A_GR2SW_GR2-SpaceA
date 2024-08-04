@@ -35,6 +35,8 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+
+
 int main()
 {
     // glfw: initialize and configure
@@ -80,28 +82,44 @@ int main()
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
+
+
+
+
+
     // build and compile shaders
     // -------------------------
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
 
     // load models
-    //para poner una ubicacion solo esta funcionando el path completo (K: A mi me funcionó desde model)
+    //para poner una ubicacion solo esta funcionando el path completo (K: A mi me funcionÃ³ desde model)
     
     //Model asteroide("model/asteroide/asteroide.obj");
-    //Model balckHole("model/black hole/blackhole.obj");
+    Model balckHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
     //Model planetas("model/planetas/planetas.obj");
     Model tierra ("model/sistema solar/tierra.obj");
+	Model sol("model/sistema solar/sol.obj");
+	Model urano("model/sistema solar/urano.obj");
+	Model venus("model/sistema solar/venus.obj");
+	Model saturno("model/sistema solar/saturnoPlaneta.obj");
+	Model saturnoAnillo("model/sistema solar/saturnoAnillos.obj");
+	Model neptuno("model/sistema solar/neptuno.obj");
+	Model mercurio("model/sistema solar/mercurio.obj");
+	Model luna("model/sistema solar/luna.obj");
+	Model jupiter("model/sistema solar/jupiter.obj");
+	Model marte("model/sistema solar/marte.obj");
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    float angle = 0.0f;
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
-        // --------------------
+     // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -109,35 +127,103 @@ int main()
         // input
         // -----
         processInput(window);
+        angle += glm::radians(deltaTime * 15);
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-
         // view/projection transformations
-        // En tu bucle de renderizado, asegúrate de que el valor de Zoom es el que deseas
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f); 
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 2000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
 
-        // Render nave
+        // Render sol (en el origen del sistema de coordenadas)
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // Ajusta la posición de la nave
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));      // Ajusta la escala de la nave
+        model = glm::translate(model, glm::vec3(-75.0f, 0.0f, -280.0f)); // PosiciÃ³n fija del sol
+        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
         ourShader.setMat4("model", model);
-        nave.Draw(ourShader);
+        sol.Draw(ourShader);
 
-        // Render sistema solar
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(10.0f, 0.0f, -20.0f)); // Ajusta la posición del sistema solar
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));         // Ajusta la escala del sistema solar
-        ourShader.setMat4("model", model);
+        // Render mercurio (Ã³rbita circular alrededor del sol)
+        float mercurioDistance = 150.0f; // Distancia del sol
+        glm::mat4 mercurioModel = glm::mat4(1.0f);
+        mercurioModel = glm::translate(mercurioModel, glm::vec3(mercurioDistance * glm::cos(angle), 0.0f, mercurioDistance * glm::sin(angle)));
+        mercurioModel = glm::scale(mercurioModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", mercurioModel);
+        mercurio.Draw(ourShader);
+
+        // Render venus (Ã³rbita circular alrededor del sol)
+        float venusDistance = 270.0f; // Distancia del sol
+        glm::mat4 venusModel = glm::mat4(1.0f);
+        venusModel = glm::translate(venusModel, glm::vec3(venusDistance * glm::cos(angle + glm::radians(45.0f)), 0.0f, venusDistance * glm::sin(angle + glm::radians(45.0f))));
+        venusModel = glm::scale(venusModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", venusModel);
+        venus.Draw(ourShader);
+
+        // Render tierra (Ã³rbita circular alrededor del sol)
+        float tierraDistance = 420.0f; // Distancia del sol
+        glm::mat4 tierraModel = glm::mat4(1.0f);
+        tierraModel = glm::translate(tierraModel, glm::vec3(tierraDistance * glm::cos(angle + glm::radians(90.0f)), 0.0f, tierraDistance * glm::sin(angle + glm::radians(90.0f))));
+        tierraModel = glm::scale(tierraModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", tierraModel);
         tierra.Draw(ourShader);
+
+        // Render marte (Ã³rbita circular alrededor del sol)
+        float marteDistance = 670.0f; // Distancia del sol
+        glm::mat4 marteModel = glm::mat4(1.0f);
+        marteModel = glm::translate(marteModel, glm::vec3(marteDistance * glm::cos(angle + glm::radians(180.0f)), 0.0f, marteDistance * glm::sin(angle + glm::radians(180.0f))));
+        marteModel = glm::scale(marteModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", marteModel);
+        marte.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(40.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		urano.Draw(ourShader);
+
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		saturno.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		saturnoAnillo.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(70.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		neptuno.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(90.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		luna.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(100.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		jupiter.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 700.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		balckHole.Draw(ourShader);
+
+        
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -160,13 +246,13 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime * 5.0);
+        camera.ProcessKeyboard(FORWARD, deltaTime * 30.0);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime * 5.0);
+        camera.ProcessKeyboard(BACKWARD, deltaTime * 30.0);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime * 5.0);
+        camera.ProcessKeyboard(LEFT, deltaTime * 30.0);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime * 5.0);
+        camera.ProcessKeyboard(RIGHT, deltaTime * 30.0);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
