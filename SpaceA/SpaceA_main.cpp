@@ -31,10 +31,10 @@ Camera camera(inicialCamera);
 bool isAnimating = false;
 bool isReturning = false; // Nuevo estado para controlar la fase de retorno
 float rotationAngle = 0.0f;
-float maxAngle = 20.0f; // Máximo ángulo de rotación
-float animationDuration = 0.5f; // Duración de la animación en segundos
-float returnDuration = 0.5f; // Duración para regresar a 0 grados
-float elapsedTime = 0.0f; // Tiempo transcurrido en la animación
+float maxAngle = 20.0f; // Mï¿½ximo ï¿½ngulo de rotaciï¿½n
+float animationDuration = 0.5f; // Duraciï¿½n de la animaciï¿½n en segundos
+float returnDuration = 0.5f; // Duraciï¿½n para regresar a 0 grados
+float elapsedTime = 0.0f; // Tiempo transcurrido en la animaciï¿½n
 float returnElapsedTime = 0.0f; // Tiempo transcurrido en la fase de retorno
 int rotationDirection = 1;
 
@@ -45,6 +45,8 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+
 
 int main()
 {
@@ -91,21 +93,37 @@ int main()
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
+
+
+
+
+
     // build and compile shaders
     // -------------------------
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
 
     // load models
-    //para referencia un omodelo utilice .obj y puedes hacerlo desde model 
+    //para poner una ubicacion solo esta funcionando el path completo (K: A mi me funcionÃ³ desde model)
     
     //Model asteroide("model/asteroide/asteroide.obj");
-    //Model balckHole("model/black hole/blackhole.obj");
+    Model balckHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
     //Model planetas("model/planetas/planetas.obj");
     Model tierra ("model/sistema solar/tierra.obj");
+	Model sol("model/sistema solar/sol.obj");
+	Model urano("model/sistema solar/urano.obj");
+	Model venus("model/sistema solar/venus.obj");
+	Model saturno("model/sistema solar/saturnoPlaneta.obj");
+	Model saturnoAnillo("model/sistema solar/saturnoAnillos.obj");
+	Model neptuno("model/sistema solar/neptuno.obj");
+	Model mercurio("model/sistema solar/mercurio.obj");
+	Model luna("model/sistema solar/luna.obj");
+	Model jupiter("model/sistema solar/jupiter.obj");
+	Model marte("model/sistema solar/marte.obj");
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    float angle = 0.0f;
 
     // render loop
     // -----------
@@ -115,7 +133,7 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         // per-frame time logic
-        // --------------------
+     // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -123,18 +141,17 @@ int main()
         // input
         // -----
         float rotationAngle = processInput(window);
+        processInput(window);
+        angle += glm::radians(deltaTime * 15);
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
-
         // view/projection transformations
-        // En tu bucle de renderizado, asegúrate de que el valor de Zoom es el que deseas
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 2000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
@@ -144,23 +161,98 @@ int main()
         glm::vec3 Diferencia = cameraPosition - inicialCamera;
        
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, Diferencia); // Ajusta la posición de la nave
+        model = glm::translate(model, Diferencia); // Ajusta la posiciï¿½n de la nave
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));// Ajusta la escala de la nave
         float angle = glm::radians(270.0f); // Convertir 90 grados a radianes
         model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
         angle = glm::radians(180.0f);
         model = glm::rotate(model, angle, glm::vec3(1.0f, 0.0f, 0.0f));
-        // Aplica la rotación de animación
+        // Aplica la rotaciï¿½n de animaciï¿½n
         model = glm::rotate(model, glm::radians(rotationAngle), glm::vec3(1.0f, 0.0f, 0.0f));
-        ourShader.setMat4("model", model);
         nave.Draw(ourShader);
-
-        // Render sistema solar
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(10.0f, 0.0f, -20.0f)); // Ajusta la posición del sistema solar
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));         // Ajusta la escala del sistema solar
+        // Render sol (en el origen del sistema de coordenadas)
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-75.0f, 0.0f, -280.0f)); // PosiciÃ³n fija del sol
+        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
         ourShader.setMat4("model", model);
+        sol.Draw(ourShader);
+
+        // Render mercurio (Ã³rbita circular alrededor del sol)
+        float mercurioDistance = 150.0f; // Distancia del sol
+        glm::mat4 mercurioModel = glm::mat4(1.0f);
+        mercurioModel = glm::translate(mercurioModel, glm::vec3(mercurioDistance * glm::cos(angle), 0.0f, mercurioDistance * glm::sin(angle)));
+        mercurioModel = glm::scale(mercurioModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", mercurioModel);
+        mercurio.Draw(ourShader);
+
+        // Render venus (Ã³rbita circular alrededor del sol)
+        float venusDistance = 270.0f; // Distancia del sol
+        glm::mat4 venusModel = glm::mat4(1.0f);
+        venusModel = glm::translate(venusModel, glm::vec3(venusDistance * glm::cos(angle + glm::radians(45.0f)), 0.0f, venusDistance * glm::sin(angle + glm::radians(45.0f))));
+        venusModel = glm::scale(venusModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", venusModel);
+        venus.Draw(ourShader);
+
+        // Render tierra (Ã³rbita circular alrededor del sol)
+        float tierraDistance = 420.0f; // Distancia del sol
+        glm::mat4 tierraModel = glm::mat4(1.0f);
+        tierraModel = glm::translate(tierraModel, glm::vec3(tierraDistance * glm::cos(angle + glm::radians(90.0f)), 0.0f, tierraDistance * glm::sin(angle + glm::radians(90.0f))));
+        tierraModel = glm::scale(tierraModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", tierraModel);
         tierra.Draw(ourShader);
+
+        // Render marte (Ã³rbita circular alrededor del sol)
+        float marteDistance = 670.0f; // Distancia del sol
+        glm::mat4 marteModel = glm::mat4(1.0f);
+        marteModel = glm::translate(marteModel, glm::vec3(marteDistance * glm::cos(angle + glm::radians(180.0f)), 0.0f, marteDistance * glm::sin(angle + glm::radians(180.0f))));
+        marteModel = glm::scale(marteModel, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", marteModel);
+        marte.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(40.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		urano.Draw(ourShader);
+
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		saturno.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		saturnoAnillo.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(70.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		neptuno.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(90.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		luna.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(100.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		jupiter.Draw(ourShader);
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 700.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		ourShader.setMat4("model", model);
+		balckHole.Draw(ourShader);
+
+        
 
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -191,9 +283,9 @@ float processInput(GLFWwindow* window)
         if (!isAnimating) {
             isAnimating = true;
             isReturning = false;
-            elapsedTime = 0.0f; // Reinicia el tiempo de animación
+            elapsedTime = 0.0f; // Reinicia el tiempo de animaciï¿½n
             returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            rotationDirection = 1; // Dirección de rotación hacia adelante
+            rotationDirection = 1; // Direcciï¿½n de rotaciï¿½n hacia adelante
         }
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
@@ -201,9 +293,9 @@ float processInput(GLFWwindow* window)
         if (!isAnimating) {
             isAnimating = true;
             isReturning = false;
-            elapsedTime = 0.0f; // Reinicia el tiempo de animación
+            elapsedTime = 0.0f; // Reinicia el tiempo de animaciï¿½n
             returnElapsedTime = 0.0f; // Reinicia el tiempo de retorno
-            rotationDirection = -1; // Dirección de rotación hacia atrás
+            rotationDirection = -1; // Direcciï¿½n de rotaciï¿½n hacia atrï¿½s
         }
     }
     if (isAnimating) {
@@ -211,7 +303,7 @@ float processInput(GLFWwindow* window)
             elapsedTime += deltaTime;
             float progress = elapsedTime / animationDuration;
             if (progress < 1.0f) {
-                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotación hacia el máximo
+                rotationAngle = maxAngle * sin(progress * 3.14159265f / 2.0f) * rotationDirection; // Rotaciï¿½n hacia el mï¿½ximo
             }
             else {
                 rotationAngle = maxAngle * rotationDirection;
@@ -223,11 +315,11 @@ float processInput(GLFWwindow* window)
             returnElapsedTime += deltaTime;
             float returnProgress = returnElapsedTime / returnDuration;
             if (returnProgress < 1.0f) {
-                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleración hacia 0
+                rotationAngle = maxAngle * (1.0f - returnProgress) * rotationDirection; // Desaceleraciï¿½n hacia 0
             }
             else {
                 rotationAngle = 0.0f;
-                isAnimating = false; // Finaliza la animación
+                isAnimating = false; // Finaliza la animaciï¿½n
             }
         }
     }
