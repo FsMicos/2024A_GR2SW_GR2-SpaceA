@@ -16,7 +16,7 @@
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-//void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 float processInput(GLFWwindow* window);
 
@@ -38,9 +38,9 @@ float elapsedTime = 0.0f; // Tiempo transcurrido en la animaci�n
 float returnElapsedTime = 0.0f; // Tiempo transcurrido en la fase de retorno
 int rotationDirection = 1;
 
+bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0f;
@@ -72,7 +72,7 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
     // tell GLFW to capture our mouse
@@ -123,8 +123,7 @@ int main()
 
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    float angle = 0.0f;
-
+    float anglePlaneta = 0.0f;
     // render loop
     // -----------
    
@@ -142,7 +141,6 @@ int main()
         // -----
         float rotationAngle = processInput(window);
         processInput(window);
-        angle += glm::radians(deltaTime * 15);
 
         // render
         // ------
@@ -151,7 +149,7 @@ int main()
         // don't forget to enable shader before setting uniforms
         ourShader.use();
         // view/projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 2000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 6000.0f);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
@@ -177,11 +175,11 @@ int main()
         model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
         ourShader.setMat4("model", model);
         sol.Draw(ourShader);
-
+		anglePlaneta += glm::radians(deltaTime * 15);
         // Render mercurio (órbita circular alrededor del sol)
         float mercurioDistance = 150.0f; // Distancia del sol
         glm::mat4 mercurioModel = glm::mat4(1.0f);
-        mercurioModel = glm::translate(mercurioModel, glm::vec3(mercurioDistance * glm::cos(angle), 0.0f, mercurioDistance * glm::sin(angle)));
+        mercurioModel = glm::translate(mercurioModel, glm::vec3(mercurioDistance * glm::cos(anglePlaneta), 0.0f, mercurioDistance * glm::sin(anglePlaneta)));
         mercurioModel = glm::scale(mercurioModel, glm::vec3(15.0f, 15.0f, 15.0f));
         ourShader.setMat4("model", mercurioModel);
         mercurio.Draw(ourShader);
@@ -189,7 +187,7 @@ int main()
         // Render venus (órbita circular alrededor del sol)
         float venusDistance = 270.0f; // Distancia del sol
         glm::mat4 venusModel = glm::mat4(1.0f);
-        venusModel = glm::translate(venusModel, glm::vec3(venusDistance * glm::cos(angle + glm::radians(45.0f)), 0.0f, venusDistance * glm::sin(angle + glm::radians(45.0f))));
+        venusModel = glm::translate(venusModel, glm::vec3(venusDistance * glm::cos(anglePlaneta + glm::radians(45.0f)), 0.0f, venusDistance * glm::sin(anglePlaneta + glm::radians(45.0f))));
         venusModel = glm::scale(venusModel, glm::vec3(15.0f, 15.0f, 15.0f));
         ourShader.setMat4("model", venusModel);
         venus.Draw(ourShader);
@@ -197,7 +195,7 @@ int main()
         // Render tierra (órbita circular alrededor del sol)
         float tierraDistance = 420.0f; // Distancia del sol
         glm::mat4 tierraModel = glm::mat4(1.0f);
-        tierraModel = glm::translate(tierraModel, glm::vec3(tierraDistance * glm::cos(angle + glm::radians(90.0f)), 0.0f, tierraDistance * glm::sin(angle + glm::radians(90.0f))));
+        tierraModel = glm::translate(tierraModel, glm::vec3(tierraDistance * glm::cos(anglePlaneta + glm::radians(90.0f)), 0.0f, tierraDistance * glm::sin(anglePlaneta + glm::radians(90.0f))));
         tierraModel = glm::scale(tierraModel, glm::vec3(15.0f, 15.0f, 15.0f));
         ourShader.setMat4("model", tierraModel);
         tierra.Draw(ourShader);
@@ -205,51 +203,62 @@ int main()
         // Render marte (órbita circular alrededor del sol)
         float marteDistance = 670.0f; // Distancia del sol
         glm::mat4 marteModel = glm::mat4(1.0f);
-        marteModel = glm::translate(marteModel, glm::vec3(marteDistance * glm::cos(angle + glm::radians(180.0f)), 0.0f, marteDistance * glm::sin(angle + glm::radians(180.0f))));
+        marteModel = glm::translate(marteModel, glm::vec3(marteDistance * glm::cos(anglePlaneta + glm::radians(180.0f)), 0.0f, marteDistance * glm::sin(anglePlaneta + glm::radians(180.0f))));
         marteModel = glm::scale(marteModel, glm::vec3(15.0f, 15.0f, 15.0f));
         ourShader.setMat4("model", marteModel);
         marte.Draw(ourShader);
 
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(40.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		// Render Urano (órbita circular alrededor del sol)
+		float uranoDistance = 1200.0f; // Distancia del sol
+        model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(uranoDistance * glm::cos(anglePlaneta + glm::radians(270.0f)), 0.0f, uranoDistance * glm::sin(anglePlaneta + glm::radians(270.0f))));
+		model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
 		ourShader.setMat4("model", model);
 		urano.Draw(ourShader);
 
-
+		// Render saturno (órbita circular alrededor del sol)
+		float saturnoDistance = 1500.0f; // Distancia del sol
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		ourShader.setMat4("model", model);
+		model = glm::translate(model, glm::vec3(saturnoDistance * glm::cos(anglePlaneta + glm::radians(315.0f)), 0.0f, saturnoDistance * glm::sin(anglePlaneta + glm::radians(315.0f))));
+        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", model);
 		saturno.Draw(ourShader);
 
+		// Render saturnoAnillo (órbita circular alrededor del sol)
+		float saturnoAnilloDistance = 1500.0f; // Distancia del sol
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(60.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		ourShader.setMat4("model", model);
+		model = glm::translate(model, glm::vec3(saturnoAnilloDistance * glm::cos(anglePlaneta + glm::radians(315.0f)), 0.0f, saturnoAnilloDistance * glm::sin(anglePlaneta + glm::radians(315.0f))));
+        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", model);
 		saturnoAnillo.Draw(ourShader);
 
+		// Render neptuno (órbita circular alrededor del sol)
+		float neptunoDistance = 1800.0f; // Distancia del sol
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(70.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		ourShader.setMat4("model", model);
+		model = glm::translate(model, glm::vec3(neptunoDistance * glm::cos(anglePlaneta + glm::radians(360.0f)), 0.0f, neptunoDistance * glm::sin(anglePlaneta + glm::radians(360.0f))));
+        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", model);
 		neptuno.Draw(ourShader);
 
+		// Render luna (órbita circular alrededor de la tierra)
+		float lunaDistance = 50.0f + tierraDistance; // Distancia de la tierra
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(90.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		ourShader.setMat4("model", model);
+		model = glm::translate(model, glm::vec3(lunaDistance * glm::cos(anglePlaneta + glm::radians(90.0f)), 0.0f, lunaDistance * glm::sin(anglePlaneta + glm::radians(90.0f))));
+        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", model);
 		luna.Draw(ourShader);
 
+		// Render jupiter (órbita circular alrededor del sol)
+		float jupiterDistance = 1200.0f; // Distancia del sol
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(100.0f, 0.0f, -70.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-		ourShader.setMat4("model", model);
+		model = glm::translate(model, glm::vec3(jupiterDistance * glm::cos(anglePlaneta + glm::radians(270.0f)), 0.0f, jupiterDistance * glm::sin(anglePlaneta + glm::radians(270.0f))));
+        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+        ourShader.setMat4("model", model);
 		jupiter.Draw(ourShader);
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 700.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1200.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f,4.0f));
 		ourShader.setMat4("model", model);
 		balckHole.Draw(ourShader);
 
