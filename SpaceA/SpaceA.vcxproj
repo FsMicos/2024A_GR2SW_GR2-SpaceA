@@ -141,6 +141,9 @@
     <None Include="shaders\shader_sa.fs" />
     <None Include="shaders\shader_sa.vs" />
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="ost\ost.wav" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <windows.h>
 #include <glm/glm.hpp>
+#include <windows.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <learnopengl/shader.h>
@@ -45,8 +45,8 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
 // timing
-float aceleracion = 30.0f;
-float shiftAcceleration = 90.0f;
+float aceleracion = 10.0f;
+float shiftAcceleration = 40.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float verticalOffset = 0.0f;
@@ -55,14 +55,7 @@ float maxVerticalOffset = 1.0f; // Maximum vertical offset
 float verticalSpeed = 30.0f; // Speed of vertical movement (adjust as needed)
 
 int main()
-{
-    // glfw: initialize and configure
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   
-
+{  
     // Reproducir el archivo de sonido de forma asíncrona
     if (PlaySound(TEXT("ost/ost.wav"), NULL, SND_FILENAME | SND_ASYNC)) {
         std::cout << "Reproduccion del sonido iniciada." << std::endl;
@@ -70,6 +63,12 @@ int main()
     else {
         std::cerr << "No se pudo reproducir el sonido." << std::endl;
     }
+
+    // glfw: initialize and configure
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -107,7 +106,6 @@ int main()
     // build and compile shaders
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
     Shader lightCubeShader("shaders/shader_light.vs", "shaders/shader_light.fs");
-    // load models
     Model blackHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
     Model sol("model/sistema solar/sol.obj");
@@ -216,7 +214,7 @@ int main()
             static_cast<float>(rand() % 100 - 50) / 10.0f
         );
     }
-    glm::vec3 naveOffset = glm::vec3(0.0f, -0.1f, 0.5f); 
+    glm::vec3 naveOffset = glm::vec3(0.0f, -0.1f, 0.5f);
 
 
     // render loop
@@ -233,6 +231,7 @@ int main()
         // render
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        ourShader.use();
         ourShader.use();
         ourShader.setVec3("light.position", sunPos);
         ourShader.setVec3("viewPos", camera.Position);
@@ -285,22 +284,8 @@ int main()
         nave.Draw(ourShader);
 
         glm::mat4 model = glm::mat4(1.0f);
-        
-        /*
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ourShader.setMat4("model", model);
-        sol.Draw(ourShader);
-        
-        */
+
         anglePlaneta += glm::radians(deltaTime * 15);
-        // Render mercurio (�rbita circular alrededor del sol)
-        float mercurioDistance = 150.0f; // Distancia del sol
-        glm::mat4 mercurioModel = glm::mat4(1.0f);
-        mercurioModel = glm::translate(mercurioModel, glm::vec3(mercurioDistance * glm::cos(anglePlaneta), 0.0f, mercurioDistance * glm::sin(anglePlaneta)));
-        mercurioModel = glm::scale(mercurioModel, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", mercurioModel);
-        mercurio.Draw(ourShader);
 
         // Actualizar posiciones de los planet
         // Actualizar posiciones de los planetas
@@ -351,36 +336,36 @@ int main()
         ourShader.setMat4("model", modelBlackHole);
         blackHole.Draw(ourShader);
 
-        
 
         // Actualizar posiciones de los asteroides
         for (int i = 0; i < 30; i++) {
-            // Actualiza la posici�n con la velocidad
+            // Actualiza la posici n con la velocidad
             asteroidePositions[i] += asteroideVelocities[i] * deltaTime;
 
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, asteroidePositions[i]);
 
-            // Ajusta el �ngulo de rotaci�n para cada asteroide
-            float angle = glfwGetTime() * 25.0f * (i % 2 == 0 ? 1 : -1); // Rotaci�n horaria y antihoraria alternada
+            // Ajusta el  ngulo de rotaci n para cada asteroide
+            float angle = glfwGetTime() * 25.0f * (i % 2 == 0 ? 1 : -1); // Rotaci n horaria y antihoraria alternada
 
-            // Escalar los asteroides para que se vean m�s grandes
+            // Escalar los asteroides para que se vean m s grandes
             model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             ourShader.setMat4("model", model);
 
             // Dibujar el modelo del asteroide correspondiente
-            asteroides[i % 10].Draw(ourShader); // Reutilizar los modelos c�clicamente
+            asteroides[i % 10].Draw(ourShader); // Reutilizar los modelos c clicamente
         }
-        
-        // luz del sol (en el origen del sistema de coordenadas)
+
+
+
+
         lightCubeShader.use();
         lightCubeShader.setMat4("projection", projection);
         lightCubeShader.setMat4("view", view);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, sunPos);
-        model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f)); // a smaller cube
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         lightCubeShader.setMat4("model", model);
         sol.Draw(lightCubeShader);
 
@@ -393,7 +378,7 @@ int main()
 }
 
 void processInput(GLFWwindow* window)
-{   
+{
     bool isShiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
         glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
 

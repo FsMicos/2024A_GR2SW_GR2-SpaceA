@@ -25,6 +25,9 @@
     <Filter Include="Source Files\model\nave">
       <UniqueIdentifier>{0f7562bd-0190-4f0d-b686-7408b765d4d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ost">
+      <UniqueIdentifier>{371249cd-d577-4805-9fe5-d690378ff985}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\OpenGL_Stuff\Library\glad.c">
@@ -47,5 +50,10 @@
     <None Include="shaders\shader_light.vs">
       <Filter>Source Files\shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="ost\ost.wav">
+      <Filter>Source Files\ost</Filter>
+    </Media>
   </ItemGroup>
 </Project>
