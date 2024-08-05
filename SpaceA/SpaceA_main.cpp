@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <windows.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -9,6 +10,7 @@
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION 
 #include <learnopengl/stb_image.h>
+#pragma comment(lib, "winmm.lib")
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -46,6 +48,7 @@ float lastY = SCR_HEIGHT / 2.0f;
 
 // timing
 float aceleracion = 30.0f;
+float shiftAcceleration = 90.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float verticalOffset = 0.0f;
@@ -60,6 +63,15 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   
+
+    // Reproducir el archivo de sonido de forma asíncrona
+    if (PlaySound(TEXT("ost/ost.wav"), NULL, SND_FILENAME | SND_ASYNC)) {
+        std::cout << "Reproduccion del sonido iniciada." << std::endl;
+    }
+    else {
+        std::cerr << "No se pudo reproducir el sonido." << std::endl;
+    }
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -96,7 +108,7 @@ int main()
 
     // build and compile shaders
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
-
+    Shader lightCubeShader("shaders/shader_light.vs", "shaders/shader_light.fs");
     // load models
     Model blackHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
@@ -191,6 +203,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ourShader.use();
+        ourShader.setVec3("light.position", sunPos);
+        ourShader.setVec3("viewPos", camera.Position);
+
+        //Exercise 14 Part 2
+       // light properties
+        ourShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        ourShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+        ourShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+        // material properties
+        ourShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+        ourShader.setFloat("material.shininess", 20.0f);
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 6000.0f);
@@ -229,14 +253,17 @@ int main()
         ourShader.setMat4("model", modelNave);
         nave.Draw(ourShader);
 
-        // Render sol (en el origen del sistema de coordenadas)
+        glm::mat4 model = glm::mat4(1.0f);
+        
+        /*
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, sunPos); // Posici�n fija del sol
         model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
         ourShader.setMat4("model", model);
         sol.Draw(ourShader);
+        
+        */
         anglePlaneta += glm::radians(deltaTime * 15);
-
         // Render mercurio (�rbita circular alrededor del sol)
         float mercurioDistance = 150.0f; // Distancia del sol
         glm::mat4 mercurioModel = glm::mat4(1.0f);
@@ -324,6 +351,7 @@ int main()
         ourShader.setMat4("model", model);
         blackHole.Draw(ourShader);
 
+        
         // Actualizar posiciones de los asteroides
         for (int i = 0; i < 30; i++) {
             // Actualiza la posici�n con la velocidad
@@ -344,6 +372,16 @@ int main()
             // Dibujar el modelo del asteroide correspondiente
             asteroides[i % 10].Draw(ourShader); // Reutilizar los modelos c�clicamente
         }
+        
+        // luz del sol (en el origen del sistema de coordenadas)
+        lightCubeShader.use();
+        lightCubeShader.setMat4("projection", projection);
+        lightCubeShader.setMat4("view", view);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, sunPos);
+        model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f)); // a smaller cube
+        lightCubeShader.setMat4("model", model);
+        sol.Draw(lightCubeShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -354,23 +392,29 @@ int main()
 }
 
 void processInput(GLFWwindow* window)
-{
+{   
+    bool isShiftPressed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+
+    // Determinar la aceleración en función de si Shift está presionado
+    float currentAcceleration = isShiftPressed ? shiftAcceleration : aceleracion;
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     float cameraSpeed = 2.5f * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime * aceleracion);
+        camera.ProcessKeyboard(FORWARD, deltaTime * currentAcceleration);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime * aceleracion);
+        camera.ProcessKeyboard(BACKWARD, deltaTime * currentAcceleration);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime * aceleracion);
+        camera.ProcessKeyboard(LEFT, deltaTime * currentAcceleration);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime * aceleracion);
+        camera.ProcessKeyboard(RIGHT, deltaTime * currentAcceleration);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboard(UP, deltaTime * aceleracion);
+        camera.ProcessKeyboard(UP, deltaTime * currentAcceleration);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.ProcessKeyboard(DOWN, deltaTime * aceleracion);
+        camera.ProcessKeyboard(DOWN, deltaTime * currentAcceleration);
 
     // Handling rotation animation
     bool keyA = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS;
