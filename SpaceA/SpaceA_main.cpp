@@ -219,7 +219,7 @@ int main()
         modelNave = glm::rotate(modelNave, pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X-axis (pitch)
 
         // Apply additional rotations and scaling
-        modelNave = glm::rotate(modelNave, glm::radians(270.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        modelNave = glm::rotate(modelNave, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         modelNave = glm::rotate(modelNave, glm::radians(180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         modelNave = glm::scale(modelNave, glm::vec3(0.1f, 0.1f, 0.1f)); // Adjust scale as needed
 
@@ -378,11 +378,11 @@ void processInput(GLFWwindow* window)
 
     if (keyA && !keyD)
     {
-        targetRotationAngle = -maxRotationAngle;
+        targetRotationAngle = maxRotationAngle;
     }
     else if (keyD && !keyA)
     {
-        targetRotationAngle = maxRotationAngle;
+        targetRotationAngle = -maxRotationAngle;
     }
     else
     {
