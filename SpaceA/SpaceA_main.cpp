@@ -16,16 +16,14 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 720;
+const unsigned int SCR_WIDTH = 1800;
+const unsigned int SCR_HEIGHT = 1000;
 
 // camera
-glm::vec3 inicialCamera(0.0f, 0.4f, 2.0f);
+glm::vec3 inicialCamera(100.0f, 0.0f, 0.0f);
 Camera camera(inicialCamera);
 
 // nave
-
-
 bool isAnimating = false;
 bool isReturning = false;
 bool isKeyPressed = false;
@@ -45,7 +43,7 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
 // timing
-float aceleracion = 30.0f;
+float aceleracion = 10.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float verticalOffset = 0.0f;
@@ -97,20 +95,23 @@ int main()
     // build and compile shaders
     Shader ourShader("shaders/shader_sa.vs", "shaders/shader_sa.fs");
 
-    // load models
     Model blackHole("model/black hole/blackhole.obj");
     Model nave("model/nave/nave.obj");
-    Model tierra("model/sistema solar/tierra.obj");
     Model sol("model/sistema solar/sol.obj");
-    Model urano("model/sistema solar/urano.obj");
-    Model venus("model/sistema solar/venus.obj");
-    Model saturno("model/sistema solar/saturnoPlaneta.obj");
-    Model saturnoAnillo("model/sistema solar/saturnoAnillos.obj");
-    Model neptuno("model/sistema solar/neptuno.obj");
-    Model mercurio("model/sistema solar/mercurio.obj");
     Model luna("model/sistema solar/luna.obj");
-    Model jupiter("model/sistema solar/jupiter.obj");
-    Model marte("model/sistema solar/marte.obj");
+
+    // load models
+    Model planets[9] = {
+        Model("model/sistema solar/mercurio.obj"),
+        Model("model/sistema solar/venus.obj"),
+        Model("model/sistema solar/tierra.obj"),
+        Model("model/sistema solar/marte.obj"),
+        Model("model/sistema solar/jupiter.obj"),
+        Model("model/sistema solar/saturnoPlaneta.obj"),
+        Model("model/sistema solar/saturnoAnillos.obj"),
+        Model("model/sistema solar/urano.obj"),
+        Model("model/sistema solar/neptuno.obj")
+    };
 
     // Array of asteroid models
     Model asteroides[10] = {
@@ -130,8 +131,36 @@ int main()
     float anglePlaneta = 0.0f;
 
     // Sun position and color
-    glm::vec3 sunPos = glm::vec3(-75.0f, 0.0f, -280.0f);
+    glm::vec3 sunPos = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 sunColor = glm::vec3(1.0f, 1.0f, 0.0f);
+
+    // Posiciones espaciales para cubos
+    glm::vec3 planetPositions[9] = {
+    glm::vec3(10.0f,  0.0f,  0.0f), // Mercurio
+    glm::vec3(20.0f,  0.0f,  0.0f), // Venus
+    glm::vec3(30.0f,  0.0f,  0.0f), // Tierra
+    glm::vec3(40.0f,  0.0f,  0.0f), // Marte
+    glm::vec3(50.0f,  0.0f,  0.0f), // Jupiter
+    glm::vec3(60.0f,  0.0f,  0.0f), // Saturno 
+    glm::vec3(60.0f,  0.0f,  0.0f), // Saturno Anillos
+    glm::vec3(70.0f, 0.0f,  0.0f), // Urano
+    glm::vec3(80.0f, 0.0f,  0.0f)  // Neptuno
+    };
+
+    float rotationSpeeds[9] = {
+    2.9f, // Mercurio
+    2.1f, // Venus
+    1.8f, // Tierra
+    1.5f, // Marte
+    0.8f, // Jupiter
+    0.6f, // Saturno
+    0.6f, // Saturno Anillos
+    0.4f, // Urano
+    0.3f  // Neptuno
+    };
+
+    glm::vec3 moonPosition = glm::vec3(3.0f, 0.0f, 0.0f); // Posición de la luna relativa a la Tierra
+    float moonOrbitSpeed = 1.0f; // Velocidad de órbita de la luna
 
     // Asteroid positions and velocities
     glm::vec3 asteroidePositions[30] = {
@@ -175,6 +204,7 @@ int main()
         );
     }
     glm::vec3 naveOffset = glm::vec3(0.0f, -0.1f, 0.5f); 
+
 
     // render loop
     while (!glfwWindowShouldClose(window))
@@ -231,98 +261,60 @@ int main()
 
         // Render sol (en el origen del sistema de coordenadas)
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, sunPos); // Posici�n fija del sol
-        model = glm::scale(model, glm::vec3(50.0f, 50.0f, 50.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ourShader.setMat4("model", model);
         sol.Draw(ourShader);
         anglePlaneta += glm::radians(deltaTime * 15);
 
-        // Render mercurio (�rbita circular alrededor del sol)
-        float mercurioDistance = 150.0f; // Distancia del sol
-        glm::mat4 mercurioModel = glm::mat4(1.0f);
-        mercurioModel = glm::translate(mercurioModel, glm::vec3(mercurioDistance * glm::cos(anglePlaneta), 0.0f, mercurioDistance * glm::sin(anglePlaneta)));
-        mercurioModel = glm::scale(mercurioModel, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", mercurioModel);
-        mercurio.Draw(ourShader);
+        // Actualizar posiciones de los planet
+        // Actualizar posiciones de los planetas
+        for (int i = 0; i < 9; i++) {
+            glm::mat4 model = glm::mat4(1.0f);
 
-        // Render venus (�rbita circular alrededor del sol)
-        float venusDistance = 270.0f; // Distancia del sol
-        glm::mat4 venusModel = glm::mat4(1.0f);
-        venusModel = glm::translate(venusModel, glm::vec3(venusDistance * glm::cos(anglePlaneta + glm::radians(45.0f)), 0.0f, venusDistance * glm::sin(anglePlaneta + glm::radians(45.0f))));
-        venusModel = glm::scale(venusModel, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", venusModel);
-        venus.Draw(ourShader);
+            // Rotación alrededor del sol (más lenta)
+            model = glm::rotate(model, currentFrame * rotationSpeeds[i] * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // Render tierra (�rbita circular alrededor del sol)
-        float tierraDistance = 420.0f; // Distancia del sol
-        glm::mat4 tierraModel = glm::mat4(1.0f);
-        tierraModel = glm::translate(tierraModel, glm::vec3(tierraDistance * glm::cos(anglePlaneta + glm::radians(90.0f)), 0.0f, tierraDistance * glm::sin(anglePlaneta + glm::radians(90.0f))));
-        tierraModel = glm::scale(tierraModel, glm::vec3(15.0f, 15.0f, 15.0f));
-        tierraModel = glm::rotate(tierraModel, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ourShader.setMat4("model", tierraModel);
-        tierra.Draw(ourShader);
+            // Traslación desde el sol
+            model = glm::translate(model, planetPositions[i]);
 
-        // Render marte (�rbita circular alrededor del sol)
-        float marteDistance = 670.0f; // Distancia del sol
-        glm::mat4 marteModel = glm::mat4(1.0f);
-        marteModel = glm::translate(marteModel, glm::vec3(marteDistance * glm::cos(anglePlaneta + glm::radians(180.0f)), 0.0f, marteDistance * glm::sin(anglePlaneta + glm::radians(180.0f))));
-        marteModel = glm::scale(marteModel, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", marteModel);
-        marte.Draw(ourShader);
+            // Rotación sobre su propio eje
+            model = glm::rotate(model, anglePlaneta, glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        // Render Urano (�rbita circular alrededor del sol)
-        float uranoDistance = 1200.0f; // Distancia del sol
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(uranoDistance * glm::cos(anglePlaneta + glm::radians(270.0f)), 0.0f, uranoDistance * glm::sin(anglePlaneta + glm::radians(270.0f))));
-        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", model);
-        urano.Draw(ourShader);
+            ourShader.setMat4("model", model);
 
-        // Render saturno (�rbita circular alrededor del sol)
-        float saturnoDistance = 1500.0f; // Distancia del sol
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(saturnoDistance * glm::cos(anglePlaneta + glm::radians(315.0f)), 0.0f, saturnoDistance * glm::sin(anglePlaneta + glm::radians(315.0f))));
-        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", model);
-        saturno.Draw(ourShader);
+            // Dibujar el modelo del planeta correspondiente
+            planets[i % 9].Draw(ourShader);
 
-        // Render saturnoAnillo (�rbita circular alrededor del sol)
-        float saturnoAnilloDistance = 1500.0f; // Distancia del sol
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(saturnoAnilloDistance * glm::cos(anglePlaneta + glm::radians(315.0f)), 0.0f, saturnoAnilloDistance * glm::sin(anglePlaneta + glm::radians(315.0f))));
-        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", model);
-        saturnoAnillo.Draw(ourShader);
+            // Si el planeta es la Tierra, renderizar la luna
+            if (i == 2) { // Tierra es el tercer planeta (índice 2)
+                glm::mat4 moonModel = glm::mat4(1.0f);
 
-        // Render neptuno (�rbita circular alrededor del sol)
-        float neptunoDistance = 1800.0f; // Distancia del sol
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(neptunoDistance * glm::cos(anglePlaneta + glm::radians(360.0f)), 0.0f, neptunoDistance * glm::sin(anglePlaneta + glm::radians(360.0f))));
-        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", model);
-        neptuno.Draw(ourShader);
+                // Rotación de la luna alrededor de la Tierra
+                moonModel = glm::rotate(moonModel, currentFrame * moonOrbitSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // Render luna (�rbita circular alrededor de la tierra)
-        float lunaDistance = 50.0f + tierraDistance; // Distancia de la tierra
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(lunaDistance * glm::cos(anglePlaneta + glm::radians(90.0f)), 0.0f, lunaDistance * glm::sin(anglePlaneta + glm::radians(90.0f))));
-        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", model);
-        luna.Draw(ourShader);
+                // Traslación desde la Tierra
+                moonModel = glm::translate(moonModel, moonPosition);
 
-        // Render jupiter (�rbita circular alrededor del sol)
-        float jupiterDistance = 1200.0f; // Distancia del sol
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(jupiterDistance * glm::cos(anglePlaneta + glm::radians(270.0f)), 0.0f, jupiterDistance * glm::sin(anglePlaneta + glm::radians(270.0f))));
-        model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
-        ourShader.setMat4("model", model);
-        jupiter.Draw(ourShader);
+                // Aplicar la transformación de la Tierra a la luna
+                moonModel = model * moonModel;
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1200.0f));
-        model = glm::scale(model, glm::vec3(20.0f, 20.0f, 20.0f));
-        ourShader.setMat4("model", model);
+                // Rotación sobre su propio eje
+                moonModel = glm::rotate(moonModel, anglePlaneta, glm::vec3(0.0f, 1.0f, 0.0f));
+
+                ourShader.setMat4("model", moonModel);
+                luna.Draw(ourShader);
+            }
+        }
+
+
+        glm::mat4 modelBlackHole = glm::mat4(1.0f);
+        modelBlackHole = glm::mat4(1.0f);
+        modelBlackHole = glm::translate(modelBlackHole, glm::vec3(0.0f, 0.0f, 1200.0f));
+        modelBlackHole = glm::scale(modelBlackHole, glm::vec3(20.0f, 20.0f, 20.0f));
+        ourShader.setMat4("model", modelBlackHole);
         blackHole.Draw(ourShader);
+
 
         // Actualizar posiciones de los asteroides
         for (int i = 0; i < 30; i++) {
